@@ -1,0 +1,173 @@
+#include <stdio.h>
+#include <math.h>
+#include <time.h>
+
+
+void heap(int* s, int j, int n) {
+    int a;
+    if (2 * j + 1 > n)
+        return;
+    if (2 * j + 1 == n) {
+        if (s[j] < s[2 * j + 1]) {
+            a = s[j];
+            s[j] = s[2 * j + 1];
+            s[2 * j + 1] = a;
+            heap(s, 2 * j + 1, n);
+        }
+        return;
+    }
+    if (2 * j + 1 < n) {
+        heap(s, 2 * j + 1, n);
+        heap(s, 2 * j + 2, n);
+        if (s[j] < s[2 * j + 1]) {
+            a = s[j];
+            s[j] = s[2 * j + 1];
+            s[2 * j + 1] = a;
+            heap(s, 2 * j + 1, n);
+        }
+        if (s[j] < s[2 * j + 2]) {
+            a = s[j];
+            s[j] = s[2 * j + 2];
+            s[2 * j + 2] = a;
+            heap(s, 2 * j + 2, n);
+        }
+    }
+}
+
+void rec(int* s, int t) {
+    int a = s[0];
+    s[0] = s[t];
+    s[t] = a;
+    t--;
+    if (t == 0)
+        return;
+    int j = 0;
+    while (true) {
+        if (2 * j + 1 > t)
+            break;
+        if (2 * j + 1 == t) {
+            if (s[j] < s[2 * j + 1]) {
+                a = s[j];
+                s[j] = s[2 * j + 1];
+                s[2 * j + 1] = a;
+                j = 2 * j + 1;
+            }
+            else
+                break;
+        }
+        if (2 * j + 1 < t) {
+            if (s[j] < s[2 * j + 1]) {
+                if (s[2 * j + 1] > s[2 * j + 2]) {
+                    a = s[j];
+                    s[j] = s[2 * j + 1];
+                    s[2 * j + 1] = a;
+                    j = 2 * j + 1;
+                }
+                else {
+                    a = s[j];
+                    s[j] = s[2 * j + 2];
+                    s[2 * j + 2] = a;
+                    j = 2 * j + 2;
+                }
+            }
+            else {
+                if (s[j] < s[2 * j + 2]) {
+                    a = s[j];
+                    s[j] = s[2 * j + 2];
+                    s[2 * j + 2] = a;
+                    j = 2 * j + 2;
+                }
+                else
+                    break;
+            }
+        }
+    }
+    rec(s, t);
+}
+
+void combinedsort(int* s, int j, int n) {
+    heap(s, j, n);
+    rec(s, n);
+}
+
+void intro(int* s, int b, int t, int tmp, int length, int index) {
+    int a;
+    if ((double)tmp >= log(length) - 1)
+        return;
+    if (b >= t)
+        return;
+    int r = (s[b] + s[t]) / 2;
+    int n = t;
+    int m = b;
+    while (b < t) {
+        while ((s[b] <= r) && (b <= n - 1))
+            b++;
+        while ((s[t] > r) && (t >= m + 1))
+            t--;
+        if (b <= t) {
+            a = s[b];
+            s[b] = s[t];
+            s[t] = a;
+        }
+    }
+    if (t < b) {
+        t++;
+        b--;
+    }
+    if (b == t) {
+        if (b - 1 < m)
+            t++;
+        else
+            b--;
+    }
+    tmp++;
+    index = 0;
+    intro(s, m, b, tmp, length, index);
+    if (index != 1) {
+        if (m < b)
+            combinedsort(s + m, 0, b - m);
+    }
+    intro(s, t, n, tmp, length, index);
+    if (index != 1) {
+        if (t < n)
+            combinedsort(s + t, 0, n - t);
+    }
+    index = 1;
+    tmp--;
+}
+
+int main(int argc, char* argv[]) {
+    int n = 0;
+    FILE* f = fopen(argv[1], "r");
+    FILE* size = fopen("size.txt", "a");
+    if (f == NULL)
+        return 1;
+    int arr[10000];
+    while (!(feof(f))) {
+        fscanf(f, "%d", &arr[n]);
+        n++;
+    }
+    fprintf(size, "%d ", n);
+
+    struct timespec t1;
+    clock_gettime(CLOCK_REALTIME, &t1);
+
+    intro(arr, 0, n - 1, 0, n, 0);
+
+    struct timespec t2;
+    clock_gettime(CLOCK_REALTIME, &t2);
+
+    FILE* f2 = fopen(argv[2], "w");
+    if (f2 == NULL)
+        return 1;
+    for (int i = 0; i < n; i++)
+        fprintf(f2, "%d ", arr[i]);
+    FILE* time = fopen("time.TXT", "a");
+    fprintf(time, "%lld ", ((1000000000 * t2.tv_sec + t2.tv_nsec) - (1000000000 * t1.tv_sec + t1.tv_nsec)));
+
+    fclose(f);
+    fclose(size);
+    fclose(time);
+    fclose(f2);
+    return 0;
+}

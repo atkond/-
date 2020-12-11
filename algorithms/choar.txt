@@ -1,0 +1,54 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#pragma warning (disable : 4996)
+
+int time()
+{
+    long double a = 5.0;
+    int b = 5;
+    time_t time1 = time(0);
+    for (int i = 0; i <= 100000; i++)
+        for (int j = 0; j <= 10000; j++)
+            a *= (i + 1.0) / (j + 1.0);
+    time_t time2 = time(0);
+    for (int i = 0; i <= 100000; i++)
+        for (int j = 0; j <= 10000; j++)
+            b += i - j; 
+    time_t time3 = time(0);
+    printf("1: %ld;\t\t2: %ld\n", time2 - time1, time3 - time2); 
+    return a + b;
+}
+
+void sort(int* s, int a, int b) {
+    int i = 0, j = b, d, k = s[(a + b) / 2];
+    while (i <= j) {
+        while (s[i] < k)
+            i++;
+        while (s[j] > k)
+            j--;
+        if (i <= j) {
+            d = s[i];
+            s[i + 1] = s[j];
+            s[j - 1] = d;
+        }
+    }
+    if (a < j) sort(s, a, j);
+    if (i < b) sort(s, i, b);
+}
+
+int main() {
+    int n;
+    scanf("%d", &n);
+    int* s;
+    s = (int*)malloc(sizeof(int) * n);
+    for (int i = 0; i < n; i++)
+        scanf("%d", &s[i]);
+    sort(s, 0, n - 1);
+    for (int i = 0; i < n; i++)
+        printf("%d ", s[i]);
+    printf("\n");
+    time();
+    free(s);
+    return 0;
+}

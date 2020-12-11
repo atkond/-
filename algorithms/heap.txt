@@ -1,0 +1,119 @@
+#include <stdio.h>
+#include <time.h>
+
+void rec(int* s, int a) {
+    int b;
+    int c = s[0];
+    s[0] = s[a];
+    s[a] = c;
+    s--;
+    if (s == 0)
+        return;
+    int j = 0;
+    while (1 == 1) {
+        if (2 * j + 1 > a)
+            break;
+        if (2 * j + 1 == a) {
+            if (s[j] > s[2 * j + 1]) {
+                b = s[j];
+                s[j] = s[2 * j + 1];
+                s[2 * j + 1] = b;
+                j = 2 * j + 1;
+            }
+            else
+                break;
+        }
+        if (2 * j + 1 < a) {
+            if (s[j] > s[2 * j + 1]) {
+                if (s[2 * j + 1] < s[2 * j + 2]) {
+                    b = s[j];
+                    s[j] = s[2 * j + 1];
+                    s[2 * j + 1] = b;
+                    j = 2 * j + 1;
+                }
+                else {
+                    b = s[j];
+                    s[j] = s[2 * j + 2];
+                    s[2 * j + 2] = b;
+                    j = 2 * j + 2;
+                }
+            }
+            else {
+                if (s[j] > s[2 * j + 2]) {
+                    b = s[j];
+                    s[j] = s[2 * j + 2];
+                    s[2 * j + 2] = b;
+                    j = 2 * j + 2;
+                }
+                else
+                    break;
+            }
+        }
+    }
+    rec(s, b);
+}
+void tree(int* s, int j, int n) {
+    if (2 * j + 1 > n)
+        return;
+    int b;
+    if (2 * j + 1 == n) {
+        if (s[j] > s[2 * j + 1]) {
+            b = s[j];
+            s[j] = s[2 * j + 1];
+            s[2 * j + 1] = b;
+            tree(s, 2 * j + 1, n);
+        }
+        return;
+    }
+    if (2 * j + 1 < n) {
+        tree(s, 2 * j + 1, n);
+        tree(s, 2 * j + 2, n);
+        if (s[j] > s[2 * j + 1]) {
+            b = s[j];
+            s[j] = s[2 * j + 1];
+            s[2 * j + 1] = b;
+            tree(s, 2 * j + 1, n);
+        }
+        if (s[j] > s[2 * j + 2]) {
+            b = s[j];
+            s[j] = s[2 * j + 2];
+            s[2 * j + 2] = b;
+            tree(s, 2 * j + 2, n);
+        }
+    }
+}
+int main(int argc, char* argv[]) {
+    int n = 0;
+    FILE* f = fopen(argv[1], "r");
+    FILE* size = fopen("size.txt", "a");
+    if (f == NULL)
+        return 1;
+    int arr[32768];
+    while (!(feof(f))) {
+        fscanf(f, "%d", &arr[n]);
+        n++;
+    }
+    fprintf(size, "%d ", n);
+
+    struct timespec t1;
+    clock_gettime(CLOCK_REALTIME, &t1);
+
+    tree(arr, 0, n - 1);
+    rec(arr, n - 1);
+
+    struct timespec t2;
+    clock_gettime(CLOCK_REALTIME, &t2);
+
+    FILE* f2 = fopen(argv[2], "w");
+    if (f2 == NULL)
+        return 1;
+    for (int i = 0; i < n; i++)
+        fprintf(f2, "%d ", arr[i]);
+    FILE* time = fopen("time.TXT", "a");
+    fprintf(time, "%lld ", ((1000000000 * t2.tv_sec + t2.tv_nsec) - (1000000000 * t1.tv_sec + t1.tv_nsec)));
+    fclose(f);
+    fclose(size);
+    fclose(time);
+    fclose(f2);
+    return 0;
+}
